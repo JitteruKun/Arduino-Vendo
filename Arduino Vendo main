@@ -44,25 +44,32 @@ int angle2 = 90;  // the current angle of second servo motor
 int angle3 = 90;  // the current angle of third servo motor
 int angle4 = 90;  // the current angle of fourth servo motor
 
-int rotation_duration = 2000;  // Default rotation duration (3 seconds) for all servos
+int rotation_duration = 150;  // Default rotation duration (3 seconds) for all servos
 unsigned long rotationStartTime1;
 unsigned long rotationStartTime2;
 unsigned long rotationStartTime3;
 unsigned long rotationStartTime4;
 
-bool scrolling = false; // Flag to indicate if LCD scrolling is in progress
-unsigned long scrollStartTime; // Time when LCD scrolling started
+bool scrolling = false;         // Flag to indicate if LCD scrolling is in progress
+unsigned long scrollStartTime;  // Time when LCD scrolling started
+String scrollTextMsg;           // Text message to scroll
+int scrollPosition = 0;         // Variable to control scrolling position
 
-// Function to scroll text on LCD
-void scrollText(String text) {
-  int textLength = text.length();
-  for (int i = 0; i <= textLength - 16; i++) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(text.substring(i, i + 16));
-    delay(300);
+void scrollText() {
+  int textLength = scrollTextMsg.length();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(scrollTextMsg.substring(scrollPosition, scrollPosition + 16));
+  scrollPosition++;
+  if (scrollPosition > textLength - 16) {
+    scrollPosition = 0;
+    scrolling = false; // Stop scrolling when the entire message has been displayed once
+    delay(2000); // Delay for 2 seconds after displaying the entire message
+    lcd.clear(); // Clear the LCD after displaying the entire message
   }
+  delay(100);  // Adjust scrolling speed
 }
+
 
 void setup() {
   lcd.init();       // Initialize LCD
@@ -102,46 +109,45 @@ void loop() {
       lcd.clear();  // Clear the LCD display before printing new information
       delay(100);   // Add a delay after clearing the LCD
       if (input_password == password_1 && input_password.length() == password_1.length()) {
-        lcd.println("Success! Thank you For Using CALMA");
+        //lcd.println("Success! Thank you For Using CALMA");
         Serial.println("Success! Thank you For Using CALMA...");
         angle1 = -180;
         servo1.write(angle1);
         rotationStartTime1 = millis();
-        scrolling = true; // Start scrolling LCD message
-        scrollStartTime = millis(); // Record scrolling start time
-        lcd.clear();
-        delay(500);
+        scrolling = true;            // Start scrolling LCD message
+        scrollTextMsg = "Success! Thank you For Using CALMA";
+        scrollStartTime = millis();  // Record scrolling start time
       } else if (input_password == password_2 && input_password.length() == password_2.length()) {
-        lcd.print("Success! Thank you For Using CALMA...");
+        lcd.println("Success! Thank you For Using CALMA");
         Serial.println("Success, Vendo2 rotating");
-        angle2 = 360;
+        angle2 = -180;
         servo2.write(angle2);
         rotationStartTime2 = millis();
-        scrolling = true; // Start scrolling LCD message
-        scrollStartTime = millis(); // Record scrolling start time
+        scrolling = true;            // Start scrolling LCD message
+        scrollTextMsg = "Success! Thank you For Using CALMA";
+        scrollStartTime = millis();  // Record scrolling start time
       } else if (input_password == password_3 && input_password.length() == password_3.length()) {
-        lcd.print("Success! Thank you For Using CALMA");
+        lcd.println("Success! Thank you For Using CALMA");
         Serial.println("Success, Vendo3 rotating");
-        angle3 = 360;
+        angle3 = -180;
         servo3.write(angle3);
         rotationStartTime3 = millis();
-        scrolling = true; // Start scrolling LCD message
-        scrollStartTime = millis(); // Record scrolling start time
+        scrolling = true;            // Start scrolling LCD message
+        scrollTextMsg = "Success! Thank you For Using CALMA";
+        scrollStartTime = millis();  // Record scrolling start time
       } else if (input_password == password_4 && input_password.length() == password_4.length()) {
-        lcd.print("Success! Thank you For Using CALMA");
+        lcd.println("Success! Thank you For Using CALMA");
         Serial.println("Success, Vendo4 rotating");
-        angle4 = 360;
+        angle4 = -180;
         servo4.write(angle4);
         rotationStartTime4 = millis();
-        scrolling = true; // Start scrolling LCD message
-        scrollStartTime = millis(); // Record scrolling start time
+        scrolling = true;            // Start scrolling LCD message
+        scrollTextMsg = "Success! Thank you For Using CALMA";
+        scrollStartTime = millis();  // Record scrolling start time
       } else {
-        lcd.print("Invalid! Try Again..");
+        lcd.println("Invalid! Try Again..");
         Serial.println("Invalid Input, try again");
         delay(100);
-        lcd.clear();
-        scrollText("Invalid! Try Again...");
-        delay(1000);
         lcd.clear();
       }
 
@@ -167,7 +173,13 @@ void loop() {
   }
 
   // Check if scrolling duration has passed and stop scrolling
-  if (scrolling && (currentTime - scrollStartTime >= 5000)) { // Assuming 5 seconds for scrolling duration
+  if (scrolling && (currentTime - scrollStartTime >= 5000)) {  // Assuming 5 seconds for scrolling duration
     scrolling = false;
+    lcd.clear();
+  }
+
+  // If scrolling is active, scroll the text
+  if (scrolling) {
+    scrollText();
   }
 }
